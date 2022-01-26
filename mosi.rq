@@ -17,5 +17,8 @@ SELECT * WHERE {
   ?mother1 rel:childOf ?grandparent .
   ?mother2 rel:childOf ?grandparent .
   optional{?grandchild rel:childOf ?child1 ;
-                       rdfs:label ?child}.
+                       rdfs:label ?child
+  } optional {
+    ?grandparent rdfs:label ?grandparent_id
+  }.
 }

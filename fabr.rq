@@ -17,5 +17,7 @@ SELECT * WHERE {
   optional{
     ?grandchild rel:childOf ?husband ;
                 rdfs:label ?child_id
-  }.
+  } optional {
+    ?grandparent rdfs:label ?grandparent_id
+  }
 }
