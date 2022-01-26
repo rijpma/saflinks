@@ -1,0 +1,21 @@
+PREFIX schema: <http://schema.org/>
+PREFIX rel: <http://purl.org/vocab/relationship#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+prefix sdo: <https://schema.org/>
+prefix individual: <https://www.capepanel.org/resource/individual/>
+
+SELECT * WHERE {
+  ?husband rel:childOf ?father1 ;
+           sdo:gender sdo:Male ;
+           rel:spouseOf ?wife ;
+           rdfs:label ?husband_id .
+  ?wife rel:childOf ?father2 ;
+        rdfs:label ?wife_id .
+  ?father1 rel:childOf ?grandparent .
+  ?father2 rel:childOf ?grandparent .
+  optional{
+    ?grandchild rel:childOf ?husband ;
+                rdfs:label ?child_id
+  }.
+}
