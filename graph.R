@@ -10,8 +10,8 @@ literal = function(string, datatype = "http://www.w3.org/2001/XMLSchema#string")
     stri_join("\"", string, "\"^^", uri(datatype))
 }
 
-saf_long = fread("~/data/cape/saf/saf4spouselinkage_clean.csv", na.strings = "")
-links = fread("~/data/cape/saf/spousallinks_2021aug05.csv", na.strings = "")
+saf_long = fread("~/data/cape/saf/saf4spouselinkage_full_clean.csv", na.strings = "")
+links = fread("~/data/cape/saf/spousallinks_full_2021jan6.csv", na.strings = "")
 
 
 # saf_long[, indid := stri_sub(couple_id_from, 1, -7)]
@@ -23,35 +23,41 @@ links = fread("~/data/cape/saf/spousallinks_2021aug05.csv", na.strings = "")
 # though note that some are proper duplicates
 # abriea1b1
 
-saf_long[, dup := stri_extract_last_regex(individual_id, "_dup_[0-9]")]
+saf_long[, dup := stri_extract_last_regex(individual_id, "_dup_[0-9]+")]
 saf_long[!is.na(dup), individual_id := stri_replace_all_fixed(individual_id, dup, "")]
 saf_long[!is.na(dup), individual_id := stri_join(dup, "_", individual_id)]
 
-links[, dup := stri_extract_last_regex(individual_id_from, "_dup_[0-9]")]
+links[, dup := stri_extract_last_regex(individual_id_from, "_dup_[0-9]+")]
 links[!is.na(dup), individual_id_from := stri_replace_all_fixed(individual_id_from, dup, "")]
 links[!is.na(dup), individual_id_from := stri_join(dup, "_", individual_id_from)]
 
-links[, dup := stri_extract_last_regex(individual_id_to, "_dup_[0-9]")]
+links[, dup := stri_extract_last_regex(individual_id_to, "_dup_[0-9]+")]
 links[!is.na(dup), individual_id_to := stri_replace_all_fixed(individual_id_to, dup, "")]
 links[!is.na(dup), individual_id_to := stri_join(dup, "_", individual_id_to)]
 
 
+# count tree lengths
+saf_long[, max(stri_count_regex(individual_id, "[a-z][1-9]+"))]
+# chains are max 13g
 
+ptrn = "[a-z][0-9?]{1,3}$" # lower case followed by question mark or three digits
 rellist = list()
-rellist[[1]] = saf_long[, list(child = individual_id, parent = stri_replace_last_regex(individual_id, "[a-z][0-9?][0-9]?$", ""))]
-for (i in 2:10){
-    rellist[[i]] = rellist[[i - 1]][, list(child = child, parent = stri_replace_last_regex(child, "[a-z][0-9?][0-9]?$", ""))]
+rellist[[1]] = saf_long[, list(child = individual_id, parent = stri_replace_last_regex(individual_id, ptrn, ""))]
+for (i in 2:13){
+    rellist[[i]] = rellist[[i - 1]][, list(child = child, parent = stri_replace_last_regex(child, ptrn, ""))]
 }
 x = rbindlist(rellist)
 # what do those _dup[123] mean?
-x[parent != child]
+# should be none
+x[parent == child]
+
+# if it doesn't end on a number/question mark, we've gone to far, so drop
 x = x[!stri_detect_regex(parent, "[a-z]$")]
 
 sibs = merge(saf_long[, list(individual_id, family_id)],
       saf_long[, list(individual_id, family_id)],
     by = "family_id",
     allow.cartesian = TRUE)
-
 
 cape = "https://www.capepanel.org/resource/individual/"
 rel = "http://purl.org/vocab/relationship#"
