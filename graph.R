@@ -54,6 +54,9 @@ x[parent == child]
 # if it doesn't end on a number/question mark, we've gone to far, so drop
 x = x[!stri_detect_regex(parent, "[a-z]$")]
 
+# parent-child simple and too big for rdf, so simple pair csv
+fwrite(unique(x), "~/data/cape/saf/parentchild.csv")
+
 sibs = merge(saf_long[, list(individual_id, family_id)],
       saf_long[, list(individual_id, family_id)],
     by = "family_id",
