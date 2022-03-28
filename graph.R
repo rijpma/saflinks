@@ -61,6 +61,7 @@ sibs = merge(saf_long[, list(individual_id, family_id)],
       saf_long[, list(individual_id, family_id)],
     by = "family_id",
     allow.cartesian = TRUE)
+fwrite(unique(sibs), "~/data/cape/saf/siblings.csv")
 
 cape = "https://www.capepanel.org/resource/individual/"
 rel = "http://purl.org/vocab/relationship#"
